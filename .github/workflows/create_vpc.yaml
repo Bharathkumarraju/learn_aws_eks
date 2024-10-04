@@ -22,7 +22,7 @@ jobs:
           /usr/bin/terraform init -input=false
           /usr/bin/terraform plan -input=false
           /usr/bin/terraform apply -input=false -auto-approve
-        working-directory: ./remote_state
+        working-directory: ./EKS_Private_Cluster/vpc
         env:
           TF_IN_AUTOMATION: true
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY }}
