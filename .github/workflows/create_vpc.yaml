@@ -1,10 +1,10 @@
-name: create remote state in s3
+name: create vpc for eks
 on:
   push:
     branches:
       - main
     paths:
-      - 'remote_state/**'
+      - 'EKS_Private_Cluster/vpc/**'
 
 jobs:
   deploy-tf-remote-state:
