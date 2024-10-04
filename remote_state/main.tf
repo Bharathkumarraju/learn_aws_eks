@@ -1,6 +1,3 @@
-provider "aws" {
-  region = "eu-west-2"
-}
 
 resource "aws_s3_bucket" "bharath_tf_state_store" {
   bucket = "bharaths-eu-terraform-remote-state"

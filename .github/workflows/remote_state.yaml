@@ -2,7 +2,7 @@ name: create remote state in s3
 on:
   push:
     branches:
-      - master
+      - main
     paths:
       - 'remote_state/**'
 jobs:
