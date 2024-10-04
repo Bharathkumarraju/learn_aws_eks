@@ -1,4 +1,3 @@
-data "aws_region" "current" {}
 
 terraform {
   backend "s3" {
