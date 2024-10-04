@@ -21,7 +21,7 @@ provider "kubernetes" {
 }
 
 locals{
-  name            = "hub-cluster"
+  name            = "bkr-cluster"
   region          = data.aws_region.current.id
   cluster_version = var.kubernetes_version
 
@@ -31,14 +31,40 @@ locals{
   authentication_mode = var.authentication_mode
 
   tags = {
-    Blueprint  = local.name
-    GithubRepo = "github.com/aws-samples/eks-blueprints-for-terraform-workshop"
+    environment  = local.name
   }
 }
 
 data "aws_iam_role" "eks_admin_role_name" {
   name = var.eks_admin_role_name
 }
+
+
+
+# The EKS pods directly log to cloudwatch.
+resource "aws_iam_policy" "node_cloudwatch_access" {
+  name = replace("${var.prefix}-${var.region_prefix}-${var.env}-node-cloudwatch-access", ".", "-")
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action = [
+          "logs:CreateLogStream",
+          "logs:PutLogEvents",
+          "logs:CreateLogGroup",
+          "logs:DescribeLogGroups",
+          "logs:DescribeLogStreams",
+          "logs:PutRetentionPolicy",
+        ]
+        Effect   = "Allow"
+        Resource = "arn:aws:logs:*:*:*"
+      }
+    ]
+  })
+}
+
+
 
 ################################################################################
 # EKS Cluster
@@ -54,7 +80,6 @@ module "eks" {
 
   authentication_mode = local.authentication_mode
 
-  # Combine root account, current user/role and additional roles to be able to access the cluster KMS key - required for terraform updates
   kms_key_administrators = distinct(concat([
     "arn:aws:iam::${data.aws_caller_identity.current.account_id}:root"],
     [data.aws_iam_session_context.current.issuer_arn]
@@ -62,14 +87,13 @@ module "eks" {
 
   enable_cluster_creator_admin_permissions = true
   access_entries = {
-    # One access entry with a policy associated
     eks_admin = {
-      principal_arn     = data.aws_iam_role.eks_admin_role_name.arn
+      principal_arn = data.aws_iam_role.eks_admin_role_name.arn
       policy_associations = {
         argocd = {
           policy_arn = "arn:aws:eks::aws:cluster-access-policy/AmazonEKSClusterAdminPolicy"
           access_scope = {
-            type       = "cluster"
+            type = "cluster"
           }
         }
       }
@@ -79,13 +103,42 @@ module "eks" {
   vpc_id     = local.vpc_id
   subnet_ids = local.private_subnets
 
-  eks_managed_node_groups = {
-    initial = {
-      instance_types = ["t3.medium"]
+  # Node Group Defaults
+  self_managed_node_group_defaults = {
+    attach_cluster_primary_security_group = true
+    create_security_group                 = false
 
-      min_size     = 3
-      max_size     = 10
-      desired_size = 3
+    # Attach additional IAM policies for CloudWatch and SSM
+    iam_role_additional_policies = {
+      ssm        = aws_iam_policy.eks-ssm-policy.arn
+      cloudwatch = aws_iam_policy.node_cloudwatch_access.arn
+    }
+  }
+
+  # Define the self-managed node groups
+  self_managed_node_groups = {
+    initial = {
+      ami_type        = "BOTTLEROCKET_x86_64"
+      name            = replace("bkr-${var.env}", ".", "-")
+      instance_types  = ["t3.medium"]
+      min_size        = 3
+      max_size        = 10
+      desired_size    = 3
+
+      # No platform parameter needed; ami_type is enough for Bottlerocket
+      enable_bootstrap_user_data = true
+
+      # Bootstrap extra args for Bottlerocket
+      bootstrap_extra_args = <<-EOT
+        [settings.host-containers.admin]
+        enabled = false
+
+        [settings.host-containers.control]
+        enabled = true
+
+        [settings.kernel]
+        lockdown = "integrity"
+      EOT
     }
   }
 
@@ -94,19 +147,16 @@ module "eks" {
       most_recent = true
     }
     vpc-cni = {
-      # Specify the VPC CNI addon should be deployed before compute to ensure
-      # the addon is configured before data plane compute resources are created
-      # See README for further details
       before_compute = true
-      most_recent    = true # To ensure access to the latest settings provided
+      most_recent    = true
       configuration_values = jsonencode({
         env = {
-          # Reference docs https://docs.aws.amazon.com/eks/latest/userguide/cni-increase-ip-addresses.html
           ENABLE_PREFIX_DELEGATION = "true"
           WARM_PREFIX_TARGET       = "1"
         }
       })
     }
   }
+
   tags = local.tags
 }
