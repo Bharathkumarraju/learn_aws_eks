@@ -137,3 +137,120 @@ spec:
   - Ingress
   - Egress
 bharathkumardasaraju@k8s_manifests$
+
+
+
+
+
+bharathkumardasaraju@k8s_manifests$ kubectl exec -it app1-6bbb5b5f84-mjwjf -- curl http://app2
+^Ccommand terminated with exit code 130
+bharathkumardasaraju@k8s_manifests$ kubectl exec -it app2-745ccb95df-qgknr  -- curl http://app1
+^Ccommand terminated with exit code 130
+bharathkumardasaraju@k8s_manifests$ kubectl get svc
+NAME         TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)   AGE
+app1         ClusterIP   10.100.214.2     <none>        80/TCP    28m
+app2         ClusterIP   10.100.235.176   <none>        80/TCP    28m
+kubernetes   ClusterIP   10.100.0.1       <none>        443/TCP   136m
+bharathkumardasaraju@k8s_manifests$ kubectl exec -it app2-745ccb95df-qgknr  -- curl http://10.100.214.2
+<!DOCTYPE html>
+<html>
+<head>
+<title>Welcome to nginx!</title>
+<style>
+html { color-scheme: light dark; }
+body { width: 35em; margin: 0 auto;
+font-family: Tahoma, Verdana, Arial, sans-serif; }
+</style>
+</head>
+<body>
+<h1>Welcome to nginx!</h1>
+<p>If you see this page, the nginx web server is successfully installed and
+working. Further configuration is required.</p>
+
+<p>For online documentation and support please refer to
+<a href="http://nginx.org/">nginx.org</a>.<br/>
+Commercial support is available at
+<a href="http://nginx.com/">nginx.com</a>.</p>
+
+<p><em>Thank you for using nginx.</em></p>
+</body>
+</html>
+bharathkumardasaraju@k8s_manifests$ kubectl exec -it app1-6bbb5b5f84-mjwjf -- curl http://10.100.235.176
+<!DOCTYPE html>
+<html>
+<head>
+<title>Welcome to nginx!</title>
+<style>
+html { color-scheme: light dark; }
+body { width: 35em; margin: 0 auto;
+font-family: Tahoma, Verdana, Arial, sans-serif; }
+</style>
+</head>
+<body>
+<h1>Welcome to nginx!</h1>
+<p>If you see this page, the nginx web server is successfully installed and
+working. Further configuration is required.</p>
+
+<p>For online documentation and support please refer to
+<a href="http://nginx.org/">nginx.org</a>.<br/>
+Commercial support is available at
+<a href="http://nginx.com/">nginx.com</a>.</p>
+
+<p><em>Thank you for using nginx.</em></p>
+</body>
+</html>
+bharathkumardasaraju@k8s_manifests$
+
+
+bharathkumardasaraju@k8s_manifests$ kubectl get networkpolicies
+NAME           POD-SELECTOR   AGE
+allow-app1     app=1          3m4s
+allow-app2     app=2          3m
+default-deny   <none>         13m
+bharathkumardasaraju@k8s_manifests$
+
+
+Below updated policy to talk to coreDNS on port 53 to get the service name resolved
+
+==========================================================================================
+
+    - to:
+        - namespaceSelector: {}  # This means to any namespace
+          podSelector:
+            matchLabels:
+              k8s-app: "kube-dns"
+      ports:
+        - port: 53
+          protocol: UDP
+
+==========================================================================================
+
+bharathkumardasaraju@k8s_manifests$ kubectl get pods
+NAME                    READY   STATUS    RESTARTS   AGE
+app1-6bbb5b5f84-mjwjf   1/1     Running   0          28m
+app2-745ccb95df-qgknr   1/1     Running   0          28m
+bharathkumardasaraju@k8s_manifests$ kubectl exec -it app1-6bbb5b5f84-mjwjf   -- curl http://app2
+<!DOCTYPE html>
+<html>
+<head>
+<title>Welcome to nginx!</title>
+<style>
+html { color-scheme: light dark; }
+body { width: 35em; margin: 0 auto;
+font-family: Tahoma, Verdana, Arial, sans-serif; }
+</style>
+</head>
+<body>
+<h1>Welcome to nginx!</h1>
+<p>If you see this page, the nginx web server is successfully installed and
+working. Further configuration is required.</p>
+
+<p>For online documentation and support please refer to
+<a href="http://nginx.org/">nginx.org</a>.<br/>
+Commercial support is available at
+<a href="http://nginx.com/">nginx.com</a>.</p>
+
+<p><em>Thank you for using nginx.</em></p>
+</body>
+</html>
+bharathkumardasaraju@k8s_manifests$
