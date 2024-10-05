@@ -102,3 +102,15 @@ sh: 1: ipconfig: not found
 
 
 
+
+bharathkumardasaraju@learn_aws_eks$ kubectl get pods -A  -o wide
+NAMESPACE     NAME                      READY   STATUS    RESTARTS   AGE   IP                NODE                                             NOMINATED NODE   READINESS GATES
+default       nginx                     1/1     Running   0          12m   192.168.122.238   i-0ffa54f6cb76122e1.eu-west-2.compute.internal   <none>           <none>
+default       nginx1                    1/1     Running   0          12m   192.168.178.95    i-00b6efdab721276a7.eu-west-2.compute.internal   <none>           <none>
+kube-system   aws-node-8n775            2/2     Running   0          61m   192.168.189.64    i-00b6efdab721276a7.eu-west-2.compute.internal   <none>           <none>
+kube-system   aws-node-j9l2w            2/2     Running   0          61m   192.168.100.135   i-0ffa54f6cb76122e1.eu-west-2.compute.internal   <none>           <none>
+kube-system   coredns-c7bbdfbb8-88t6w   1/1     Running   0          67m   192.168.106.46    i-0ffa54f6cb76122e1.eu-west-2.compute.internal   <none>           <none>
+kube-system   coredns-c7bbdfbb8-zvncd   1/1     Running   0          67m   192.168.187.250   i-00b6efdab721276a7.eu-west-2.compute.internal   <none>           <none>
+kube-system   kube-proxy-4pxnf          1/1     Running   0          61m   192.168.100.135   i-0ffa54f6cb76122e1.eu-west-2.compute.internal   <none>           <none>
+kube-system   kube-proxy-hf49s          1/1     Running   0          61m   192.168.189.64    i-00b6efdab721276a7.eu-west-2.compute.internal   <none>           <none>
+bharathkumardasaraju@learn_aws_eks$
