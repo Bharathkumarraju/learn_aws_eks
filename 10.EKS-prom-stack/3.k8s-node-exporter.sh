@@ -119,3 +119,9 @@ monitoring-prometheus-node-exporter       ClusterIP   10.100.207.124   <none>   
 bharathkumardasaraju@learn_aws_eks$ kubectl get svc -n monitoring -o wide| grep -i kube-state
 monitoring-kube-state-metrics             ClusterIP   10.100.162.202   <none>        8080/TCP                     81m   app.kubernetes.io/instance=monitoring,app.kubernetes.io/name=kube-state-metrics
 bharathkumardasaraju@learn_aws_eks$ 
+
+
+bharathkumardasaraju@learn_aws_eks$ aws eks describe-cluster --name bharath-cluster --query "cluster.kubernetesNetworkConfig.serviceIpv4Cidr" --output text
+
+10.100.0.0/16
+bharathkumardasaraju@learn_aws_eks$ 

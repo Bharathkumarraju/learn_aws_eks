@@ -114,3 +114,10 @@ CoreDNS is running at https://D629F2CFAEB3F891C34B78544BD985CC.gr7.eu-west-3.eks
 To further debug and diagnose cluster problems, use 'kubectl cluster-info dump'.
 bharathkumardasaraju@10.EKS-prom-stack$
 
+
+
+bharathkumardasaraju@learn_aws_eks$ aws eks describe-cluster --name bharath-cluster --query "cluster.kubernetesNetworkConfig.serviceIpv4Cidr" --output text
+
+10.100.0.0/16
+bharathkumardasaraju@learn_aws_eks$ 
+

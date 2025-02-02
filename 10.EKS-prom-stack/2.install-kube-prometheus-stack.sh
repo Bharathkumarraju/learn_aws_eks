@@ -130,3 +130,9 @@ spec:
       app.kubernetes.io/name: grafana
 bharathkumardasaraju@learn_aws_eks$ 
 
+
+bharathkumardasaraju@learn_aws_eks$ aws eks describe-cluster --name bharath-cluster --query "cluster.kubernetesNetworkConfig.serviceIpv4Cidr" --output text
+
+10.100.0.0/16
+bharathkumardasaraju@learn_aws_eks$ 
+
